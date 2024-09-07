@@ -57,19 +57,24 @@
 
     <script>
         document.getElementById('indignation-button').addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    // Envia a localização para o backend
-                    const data = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    sendTouch(data);
-                }, function() {
-                    alert('Por favor, selecione a cidade manualmente.');
-                });
+            // Verifica se o usuário já votou hoje através do cookie
+            if (document.cookie.split(';').some((item) => item.trim().startsWith('voted_today='))) {
+                alert('Você já se manifestou hoje. Tente novamente amanhã!');
             } else {
-                alert('Geolocalização não é suportada pelo seu navegador.');
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        // Envia a localização para o backend
+                        const data = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        sendTouch(data);
+                    }, function() {
+                        alert('Por favor, selecione a cidade manualmente.');
+                    });
+                } else {
+                    alert('Geolocalização não é suportada pelo seu navegador.');
+                }
             }
         });
 
@@ -84,6 +89,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
+                    // Define um cookie para impedir novos toques no mesmo dia
+                    document.cookie = "voted_today=1; max-age=86400; path=/"; // Expira em 24 horas
                     alert(data.message);
                     // Atualizar termômetro visual
                 } else {
