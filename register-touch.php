@@ -1,10 +1,11 @@
 <?php
-// Conexão com o banco de dados
-$host = 'localhost';
-$dbname = 'aindasomoslivres';
-$user = 'root';  // Substituir pelo usuário correto do MySQL
-$pass = '';      // Substituir pela senha correta do MySQL
+// Obtém os detalhes de conexão do banco de dados a partir de variáveis de ambiente
+$host = getenv('DB_HOST') ?: 'localhost';  // Valor padrão 'localhost' se não for definido
+$dbname = getenv('DB_NAME') ?: 'aindasomoslivres';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
 
+// Conexão com o banco de dados usando variáveis de ambiente
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -33,10 +34,11 @@ function registerTouch($city_id, $user_id = null, $pdo) {
 }
 
 // Captura a latitude e longitude do POST ou cidade selecionada manualmente
-$latitude = isset($_POST['latitude']) ? $_POST['latitude'] : null;
-$longitude = isset($_POST['longitude']) ? $_POST['longitude'] : null;
-$city_id = isset($_POST['city_id']) ? $_POST['city_id'] : null;
-$user_id = isset($_POST['user_id']) ? $_POST['user_id'] : null;  // Opcional se estiver logado
+$input = json_decode(file_get_contents('php://input'), true);
+$latitude = isset($input['latitude']) ? $input['latitude'] : null;
+$longitude = isset($input['longitude']) ? $input['longitude'] : null;
+$city_id = isset($input['city_id']) ? $input['city_id'] : null;
+$user_id = isset($input['user_id']) ? $input['user_id'] : null;  // Opcional se estiver logado
 
 if ($latitude && $longitude) {
     // Busca a cidade mais próxima
