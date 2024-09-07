@@ -47,7 +47,7 @@
 </head>
 <body>
     <div class="container">
-        <button id="indignation-button">Clique aqui</button>
+        <button id="indignation-button">Bora Manifestar</button>
         <div class="thermometer">
             Toques hoje: <span id="daily-touches">0</span><br>
             Toques na semana: <span id="weekly-touches">0</span><br>
@@ -56,11 +56,41 @@
     </div>
 
     <script>
-        // Aqui podemos adicionar a lógica para incrementar os toques e atualizá-los visualmente
         document.getElementById('indignation-button').addEventListener('click', function() {
-            // Lógica para enviar o toque para o servidor e atualizar os contadores
-            alert('Toque registrado!');
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    // Envia a localização para o backend
+                    const data = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    sendTouch(data);
+                }, function() {
+                    alert('Por favor, selecione a cidade manualmente.');
+                });
+            } else {
+                alert('Geolocalização não é suportada pelo seu navegador.');
+            }
         });
+
+        function sendTouch(data) {
+            fetch('register_touch.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    // Atualizar termômetro visual
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
     </script>
 </body>
 </html>
